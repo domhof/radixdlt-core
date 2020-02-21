@@ -17,6 +17,8 @@
 
 package com.radixdlt.consensus;
 
+import com.radixdlt.crypto.Signatures;
+
 import java.util.Objects;
 
 public final class QuorumCertificate {
@@ -28,6 +30,10 @@ public final class QuorumCertificate {
 
 	public long getRound() {
 		return vote.getRound();
+	}
+
+	public Signatures signatures() {
+		return this.vote.signatures();
 	}
 
 	@Override

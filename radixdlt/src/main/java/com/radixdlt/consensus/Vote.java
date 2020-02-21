@@ -17,49 +17,82 @@
 
 package com.radixdlt.consensus;
 
+import com.radixdlt.crypto.*;
+
 import java.util.Objects;
 
 /**
  * Represents a vote on a vertex
  */
 public final class Vote {
-	private final int hash;
+	private final Hash hash;
 	private final long round;
+	private final Signatures signatures;
 
 	/**
 	 * Create a vote for a given round with a certain hash.
 	 * Note that the hash must reflect the given round.
 	 * This is a temporary method as Vote will be expanded to maintain this invariant itself.
 	 */
-	public Vote(long round, int hash) {
+	public Vote(long round, Hash hash) {
 		this.round = round;
-		this.hash = hash;
+		this.hash = Objects.requireNonNull(hash, "'hash' is required");
+		this.signatures = Signatures.defaultEmptySignatures();
+	}
+
+	/**
+	 * Create a vote for a given round with a certain hash and signatures (by replicas) of the hash.
+	 * Note that the hash must reflect the given round.
+	 * This is a temporary method as Vote will be expanded to maintain this invariant itself.
+	 */
+	public Vote(long round, Hash hash, Signatures signatures) {
+		this.round = round;
+		this.hash = Objects.requireNonNull(hash, "'hash' is required");
+		this.signatures = Objects.requireNonNull(signatures, "'signatures' is required");
+	}
+
+	/**
+	 * Create a vote for a given round with a certain hash and a signature (by a replica) of the hash.
+	 * Note that the hash must reflect the given round.
+	 * This is a temporary method as Vote will be expanded to maintain this invariant itself.
+	 */
+	public Vote(long round, Hash hash, Signature signature, ECPublicKey publicKey) {
+		this(round, hash, Signatures.defaultSingle(publicKey, signature));
 	}
 
 	public long getRound() {
 		return round;
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(round, hash);
+	public Signatures signatures() {
+		return signatures;
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof Vote)) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-
-		Vote v = (Vote) o;
-		return v.hash == this.hash && v.round == this.round;
+		Vote vote = (Vote) o;
+		return round == vote.round && hash.equals(vote.hash) && signatures.equals(vote.signatures);
 	}
 
 	@Override
+	public int hashCode() {
+		return Objects.hash(hash, round, signatures);
+	}
+
+
+	@Override
 	public String toString() {
-		return "Vote{" +
-			"hash=" + hash +
-			", round=" + round +
-			'}';
+		return String.format(
+				"%s{hash=%s, round=%s, signatures:%s}", getClass().getSimpleName(),
+				String.valueOf(this.hash),
+				String.valueOf(round),
+				String.valueOf(signatures)
+		);
 	}
 }
